@@ -32,6 +32,7 @@ from os import makedirs, remove
 from os.path import exists, join
 import time
 import sys
+import wandb
 
 # PLY reader
 from utils.ply import read_ply, write_ply
@@ -199,6 +200,9 @@ class ModelTrainer:
                     torch.nn.utils.clip_grad_value_(net.parameters(), config.grad_clip_norm)
                 self.optimizer.step()
 
+                metrics = {"train/train_loss": loss, 
+                           "train/epoch": (step + 1 + (n_steps_per_epoch * epoch)) / n_steps_per_epoch, 
+                            "train/example_ct": example_ct}
                 
                 torch.cuda.empty_cache()
                 torch.cuda.synchronize(self.device)

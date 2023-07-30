@@ -33,6 +33,8 @@ from os.path import exists, join
 import time
 import sys
 import wandb
+import torch.amp
+import math
 
 # PLY reader
 from utils.ply import read_ply, write_ply
@@ -127,7 +129,11 @@ class ModelTrainer:
         """
         Train the model on a particular dataset.
         """
-
+        wandb.init(
+        # Set the project where this run will be logged
+        project="kpconvfp16_test1"
+        # Track hyperparameters and run metadata
+        )
         ################
         # Initialization
         ################
@@ -186,9 +192,15 @@ class ModelTrainer:
                 self.optimizer.zero_grad()
 
                 # Forward pass
-                outputs = net(batch, config)
-                loss = net.loss(outputs, batch.labels)
-                acc = net.accuracy(outputs, batch.labels)
+                # outputs = net(batch, config)
+                # loss = net.loss(outputs, batch.labels)
+                # acc = net.accuracy(outputs, batch.labels)
+
+                with torch.autocast(device_type="cuda", dtype=torch.float16):
+                  outputs = net(batch, config)
+                  loss = net.loss(outputs, batch.labels)
+                  acc = net.accuracy(outputs, batch.labels)
+                  n_steps_per_epoch = math.ceil(len(training_loader.dataset) / training_loader.batch_size)
 
                 t += [time.time()]
 
@@ -201,8 +213,8 @@ class ModelTrainer:
                 self.optimizer.step()
 
                 metrics = {"train/train_loss": loss, 
-                           "train/epoch": (step + 1 + (n_steps_per_epoch * epoch)) / n_steps_per_epoch, 
-                            "train/example_ct": example_ct}
+                           "train/epoch": (self.step + 1 + (n_steps_per_epoch * epoch)) / n_steps_per_epoch
+                            }
                 
                 torch.cuda.empty_cache()
                 torch.cuda.synchronize(self.device)

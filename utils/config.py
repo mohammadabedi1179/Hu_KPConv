@@ -73,7 +73,7 @@ class Config:
     invar_mode = ''
 
     # Dimension of the first feature maps
-    first_features_dim = 64
+    first_features_dim = 32
 
     # Batch normalization parameters
     use_batch_norm = True
@@ -96,7 +96,7 @@ class Config:
     conv_radius = 2.5
 
     # Radius of deformable convolution in "number grid cell". Larger so that deformed kernel can spread out
-    deform_radius = 5.0
+    deform_radius = 5
 
     # Kernel point influence radius
     KP_extent = 1.0
@@ -172,7 +172,8 @@ class Config:
     val_batch_num = 10
 
     # Maximal number of epochs
-    max_epoch = 1000
+    max_epoch = 50
+  
 
     # Number of steps per epochs
     epoch_steps = 1000

@@ -115,8 +115,8 @@ class KPCNN(nn.Module):
                 out_dim *= 2
                 block_in_layer = 0
 
-        self.head_mlp = UnaryBlock(out_dim, 1024, False, 0)
-        self.head_softmax = UnaryBlock(1024, config.num_classes, False, 0, no_relu=True)
+        self.head_mlp = UnaryBlock(out_dim, 256, False, 0) #1024
+        self.head_softmax = UnaryBlock(256, config.num_classes, False, 0, no_relu=True)
 
         ################
         # Network Losses

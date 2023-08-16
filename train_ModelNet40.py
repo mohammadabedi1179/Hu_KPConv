@@ -36,6 +36,15 @@ from utils.config import Config
 from utils.trainer import ModelTrainer
 from models.architectures import KPCNN
 
+def get_n_params(model):
+  pp=0
+  for p in list(model.parameters()):
+    nn=1
+    for s in list(p.size()):
+        nn = nn*s
+    pp += nn
+  return pp
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -79,10 +88,6 @@ class Modelnet40Config(Config):
                     'resnetb',
                     'resnetb_strided',
                     'resnetb',
-                    'resnetb',
-                    'resnetb_strided',
-                    'resnetb',
-                    'resnetb',
                     'global_average']
 
     ###################
@@ -99,10 +104,10 @@ class Modelnet40Config(Config):
     conv_radius = 2.5
 
     # Radius of deformable convolution in "number grid cell". Larger so that deformed kernel can spread out
-    deform_radius = 6.0
+    deform_radius = 5.0
 
     # Radius of the area of influence of each kernel point in "number grid cell". (1.0 is the standard value)
-    KP_extent = 1.2
+    KP_extent = 1.0
 
     # Behavior of convolutions in ('constant', 'linear', 'gaussian')
     KP_influence = 'linear'
@@ -133,7 +138,7 @@ class Modelnet40Config(Config):
     #####################
 
     # Maximal number of epochs
-    max_epoch = 500
+    max_epoch = 50
 
     # Learning rate management
     learning_rate = 1e-2
@@ -151,7 +156,7 @@ class Modelnet40Config(Config):
     validation_size = 30
 
     # Number of epoch between each checkpoint
-    checkpoint_gap = 50
+    checkpoint_gap = 10
 
     # Augmentations
     augment_scale_anisotropic = True
@@ -270,6 +275,7 @@ if __name__ == '__main__':
     # Define network model
     t1 = time.time()
     net = KPCNN(config)
+    print(f'\nNumber of Parameters:{get_n_params(net)}')
 
     # Define a trainer class
     trainer = ModelTrainer(net, config, chkp_path=chosen_chkp)

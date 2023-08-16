@@ -131,7 +131,7 @@ class ModelTrainer:
         """
         wandb.init(
         # Set the project where this run will be logged
-        project="kpconvfp16_test1"
+        project="kpconvfp16_main"
         # Track hyperparameters and run metadata
         )
         ################
@@ -165,6 +165,9 @@ class ModelTrainer:
 
         # Start training loop
         for epoch in range(config.max_epoch):
+            m_loss = 0
+            m_acc = 0
+            n_i = 0
 
             # Remove File for kill signal
             if epoch == config.max_epoch - 1 and exists(PID_file):
@@ -172,6 +175,7 @@ class ModelTrainer:
 
             self.step = 0
             for batch in training_loader:
+                n_i += 1
 
                 # Check kill signal (running_PID.txt deleted)
                 if config.saving and not exists(PID_file):
@@ -237,7 +241,9 @@ class ModelTrainer:
                                          1000 * mean_dt[0],
                                          1000 * mean_dt[1],
                                          1000 * mean_dt[2]))
-
+                m_loss += net.output_loss
+                m_acc += acc
+              
                 # Log file
                 if config.saving:
                     with open(join(config.saving_path, 'training.txt'), "a") as file:
@@ -255,7 +261,7 @@ class ModelTrainer:
             ##############
             # End of epoch
             ##############
-
+            wandb.log({"Training Loss": m_loss/n_i, "Training Accuracy": m_acc/n_i})
             # Check kill signal (running_PID.txt deleted)
             if config.saving and not exists(PID_file):
                 break
@@ -425,6 +431,7 @@ class ModelTrainer:
 
         val_ACC = 100 * np.sum(np.diag(C1)) / (np.sum(C1) + 1e-6)
         vote_ACC = 100 * np.sum(np.diag(C2)) / (np.sum(C2) + 1e-6)
+        wandb.log({"Validation Accuracy": val_ACC, "Vote Accuracy": vote_ACC})
         print('Accuracies : val = {:.1f}% / vote = {:.1f}%'.format(val_ACC, vote_ACC))
 
         return C1

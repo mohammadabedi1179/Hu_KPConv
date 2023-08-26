@@ -43,6 +43,16 @@ from models.architectures import KPCNN
 #       \******************/
 #
 
+def get_n_params(model):
+  pp=0
+  for p in list(model.parameters()):
+    nn=1
+    for s in list(p.size()):
+        nn = nn*s
+    pp += nn
+  return pp
+
+
 class Modelnet40Config(Config):
     """
     Override the parameters you want to modify for this dataset
@@ -72,16 +82,6 @@ class Modelnet40Config(Config):
     architecture = ['simple',
                     'resnetb',
                     'resnetb_strided',
-                    'resnetb',
-                    'resnetb',
-                    'resnetb_strided',
-                    'resnetb',
-                    'resnetb',
-                    'resnetb_strided',
-                    'resnetb',
-                    'resnetb',
-                    'resnetb_strided',
-                    'resnetb',
                     'resnetb',
                     'global_average']
 
@@ -133,7 +133,7 @@ class Modelnet40Config(Config):
     #####################
 
     # Maximal number of epochs
-    max_epoch = 500
+    max_epoch = 100
 
     # Learning rate management
     learning_rate = 1e-2
@@ -151,7 +151,7 @@ class Modelnet40Config(Config):
     validation_size = 30
 
     # Number of epoch between each checkpoint
-    checkpoint_gap = 50
+    checkpoint_gap = 10
 
     # Augmentations
     augment_scale_anisotropic = True
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # Choose here if you want to start training from a previous snapshot (None for new training)
     #previous_training_path = 'Log_2020-03-19_19-53-27'
-    previous_training_path = ''
+    previous_training_path = None
 
     # Choose index of checkpoint to start from. If None, uses the latest chkp
     chkp_idx = None
@@ -270,6 +270,10 @@ if __name__ == '__main__':
     # Define network model
     t1 = time.time()
     net = KPCNN(config)
+    print("\nNumber of Parameters is:")
+    print(get_n_params(net))
+    print(sum(p.numel() for p in net.parameters() if p.requires_grad))
+    
 
     # Define a trainer class
     trainer = ModelTrainer(net, config, chkp_path=chosen_chkp)
